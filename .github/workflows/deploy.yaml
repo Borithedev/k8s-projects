@@ -1,0 +1,35 @@
+name: Deploy to Kubernetes
+on:
+  push:
+    branches: [master]
+
+jobs:
+  build-push:
+    runs-on: ubuntu-latest  # Runs on GitHub's servers
+    steps:
+      - uses: actions/checkout@v4  # Checks out your code from GitHub
+      - name: Log in to GitHub Container Registry
+        uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}  # Your GitHub username
+          password: ${{ secrets.GHCR_TOKEN }}  # Secret from Step 3
+      - name: Build and Push Docker Image
+        uses: docker/build-push-action@v5
+        with:
+          context: .  # Uses files from your project folder
+          push: true
+          tags: ghcr.io/${{ github.repository_owner }}/my-app:latest
+
+  deploy:
+    needs: build-push  # Runs after build-push finishes
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Set up kubectl
+        uses: azure/setup-kubectl@v3  # Installs kubectl on GitHub's server
+      - name: Deploy to Cluster
+        run: |
+          # Use the KUBECONFIG secret to connect to your cluster
+          echo "${{ secrets.KUBECONFIG }}" | base64 -d > $HOME/.kube/config
+          kubectl apply -f deploy.yaml
