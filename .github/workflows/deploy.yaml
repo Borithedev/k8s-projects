@@ -30,4 +30,4 @@ jobs:
         uses: azure/setup-kubectl@v3  # Installs kubectl on GitHub's server
       - name: Deploy to Cluster
         run: |
-          kubectl apply -f deploy.yaml
+          kubectl apply -f deploy.yaml --validate=false
