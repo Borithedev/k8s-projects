@@ -30,4 +30,6 @@ jobs:
         uses: azure/setup-kubectl@v3  # Installs kubectl on GitHub's server
       - name: Deploy to Cluster
         run: |
-          kubectl --kubeconfig=/home/runner-user/.kube/config apply -f deploy.yaml
+          # Use the KUBECONFIG secret to connect to your cluster
+          echo "${{ secrets.KUBECONFIG }}" | base64 -d > $HOME/.kube/config
+          kubectl apply -f deploy.yaml
